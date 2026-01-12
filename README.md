@@ -2,6 +2,19 @@
 
 Application web mobile-first pour la commande en ligne d'un restaurant de chawarma. Les clients peuvent préparer leur commande avant d'arriver via un QR code ou un lien Instagram.
 
+## 🚀 Déploiement Rapide
+
+**Pour déployer sur Vercel avec GitHub :**
+
+1. **Suivez le guide rapide** : [`DEPLOIEMENT_RAPIDE.md`](./DEPLOIEMENT_RAPIDE.md) (15 minutes)
+2. **Ou le guide détaillé** : [`DEPLOIEMENT_VERCEL.md`](./DEPLOIEMENT_VERCEL.md)
+
+**En résumé :**
+- Créez un dépôt GitHub
+- Configurez Supabase (base de données PostgreSQL gratuite)
+- Déployez sur Vercel (hébergement gratuit)
+- Obtenez votre lien de production : `https://votre-app.vercel.app/r/zen-acham`
+
 ## 🚀 Stack Technique
 
 - **Frontend**: Next.js 14 (App Router) + TypeScript + Tailwind CSS
