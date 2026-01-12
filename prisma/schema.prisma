@@ -1,0 +1,173 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Restaurant {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  city        String
+  address     String?
+  addressAr   String?
+  phone       String?
+  latitude    Float?
+  longitude   Float?
+  currency    String   @default("DH")
+  instagramUrl String?
+  logoUrl     String?
+  openingHours Json?   // { monday: { open: "09:00", close: "22:00" }, ... }
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  categories Category[]
+  orders     Order[]
+  admins     Admin[]
+}
+
+model Admin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Category {
+  id           String   @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  nameFr       String
+  nameAr       String?
+  imageUrl     String?
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  items       Item[]
+}
+
+model Item {
+  id           String   @id @default(cuid())
+  categoryId   String
+  category     Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  nameFr       String
+  nameAr       String?
+  description  String?
+  price        Decimal  @db.Decimal(10, 2)
+  imageUrl     String?
+  isAvailable  Boolean  @default(true)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  modifiers    Modifier[]
+  orderItems   OrderItem[]
+}
+
+model Modifier {
+  id          String   @id @default(cuid())
+  itemId      String
+  item        Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  nameFr      String
+  nameAr      String?
+  type        ModifierType
+  isRequired  Boolean  @default(false)
+  displayOrder Int     @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  options     ModifierOption[]
+}
+
+enum ModifierType {
+  SIZE
+  SAUCE
+  SUPPLEMENT
+  DRINK
+  COOKING
+  NOTE
+}
+
+model ModifierOption {
+  id          String   @id @default(cuid())
+  modifierId  String
+  modifier    Modifier @relation(fields: [modifierId], references: [id], onDelete: Cascade)
+  nameFr      String
+  nameAr      String?
+  price       Decimal  @db.Decimal(10, 2) @default(0)
+  isAvailable Boolean  @default(true)
+  displayOrder Int     @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orderItemModifiers OrderItemModifier[]
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  restaurantId    String
+  restaurant      Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  customerName    String
+  customerPhone   String
+  orderType       OrderType
+  pickupTime      DateTime?
+  status          OrderStatus @default(NEW)
+  totalAmount     Decimal     @db.Decimal(10, 2)
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  items           OrderItem[]
+}
+
+enum OrderType {
+  DINE_IN
+  TAKEAWAY
+}
+
+enum OrderStatus {
+  NEW
+  PREPARING
+  READY
+  SERVED
+  CANCELLED
+}
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  itemId      String
+  item        Item     @relation(fields: [itemId], references: [id])
+  quantity    Int      @default(1)
+  unitPrice   Decimal  @db.Decimal(10, 2)
+  totalPrice  Decimal  @db.Decimal(10, 2)
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  modifiers   OrderItemModifier[]
+}
+
+model OrderItemModifier {
+  id                String        @id @default(cuid())
+  orderItemId       String
+  orderItem         OrderItem     @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  modifierOptionId  String
+  modifierOption    ModifierOption @relation(fields: [modifierOptionId], references: [id])
+  quantity          Int           @default(1)
+  unitPrice         Decimal       @db.Decimal(10, 2)
+  totalPrice        Decimal       @db.Decimal(10, 2)
+  createdAt         DateTime      @default(now())
+}
+
